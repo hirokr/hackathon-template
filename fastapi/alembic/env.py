@@ -11,6 +11,7 @@ from core.database import Base
 
 # Import all models so Alembic can detect them
 import models.user  # noqa: F401
+import models.refresh_token  # noqa: F401
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL.replace("+asyncpg", ""))

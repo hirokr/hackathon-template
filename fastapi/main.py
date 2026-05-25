@@ -6,7 +6,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from core.config import settings
 from core.database import engine, Base
-from routers import auth, users
+from routers import auth, users, ws
 
 
 @asynccontextmanager
@@ -26,7 +26,7 @@ app.add_middleware(
     SessionMiddleware,
     secret_key=settings.SESSION_SECRET,
     max_age=settings.SESSION_MAX_AGE,
-    https_only=False,  # Set True in production
+    https_only=settings.SESSION_COOKIE_SECURE,
 )
 app.add_middleware(
     CORSMiddleware,
@@ -39,6 +39,7 @@ app.add_middleware(
 # ── Routers ───────────────────────────────────────────────────────────────────
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(users.router, prefix="/users", tags=["users"])
+app.include_router(ws.router, tags=["ws"])
 
 
 @app.get("/health")
