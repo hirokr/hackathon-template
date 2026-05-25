@@ -6,8 +6,8 @@ uvicorn[standard]==0.29.0
 sqlalchemy==2.0.30
 alembic==1.13.1
 asyncpg==0.31.0           # async PostgreSQL driver (CPython 3.13 compatible)
-pydantic==2.7.1
-pydantic-settings==2.2.1
+pydantic==2.13.4
+pydantic-settings==2.14.1
 passlib[bcrypt]==1.7.4
 itsdangerous==2.2.0       # session signing
 starlette==0.37.2
