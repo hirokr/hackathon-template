@@ -1,0 +1,8 @@
+node_modules
+.env
+.env.development
+.env.production
+.neon_local/
+/logs
+/prisma/migrations
+/prisma/generated

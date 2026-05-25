@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+
+enum Gender {
+  MALE
+  FEMALE
+  UNISEX
+}
+
+// USER
+
+model User {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email            String   @unique @db.VarChar(255)
+  passwordHash     String?  @map("password_hash") @db.VarChar(255)
+  name             String   @db.VarChar(255)
+  avatarUrl        String?  @map("avatar_url") @db.Text
+  userBodyImageUrl String?  @map("user_body_image_url") @db.Text
+  age              Int?     @db.Integer
+  ethnicity        String?  @db.VarChar(100)
+  gender           Gender   @default(UNISEX)
+  interests        String[] @map("interests")
+  location         String?  @db.VarChar(255)
+
+  verificationToken String? @map("verification_token") @db.VarChar(255)
+  emailVerified     Boolean @default(false) @map("email_verified")
+  isActive          Boolean @default(true) @map("is_active")
+
+  oauthProvider String? @map("oauth_provider") @db.VarChar(50)
+  oauthId       String? @map("oauth_id") @db.VarChar(255)
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  refreshTokens   RefreshToken[]
+
+  @@unique([oauthProvider, oauthId])
+  @@index([email])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model RefreshToken {
+  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId String @map("user_id") @db.Uuid
+
+  token     String @unique @db.Text
+  sessionId String @unique @map("session_id")
+
+  userAgent String? @db.Text
+  ipAddress String? @db.VarChar(45)
+
+  isActive  Boolean  @default(true)
+  expiresAt DateTime @map("expires_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
