@@ -45,11 +45,17 @@ const parseUserIdFromSessionCacheKey = (key: string): string | null => {
 const makeProductIntentCacheKey = (intentKey: string): string =>
   `${PRODUCT_INTENT_CACHE_PREFIX}:${intentKey}`;
 
+const isRedisReady = () => redisClient.isOpen;
+
 // DONE: Create a utility function to get and set cache with expiration
 export const getSetCache = async <T>(
   key: string,
   cb: () => Promise<T>
 ): Promise<T | null> => {
+  if (!isRedisReady()) {
+    return cb();
+  }
+
   const data = await redisClient.get(key);
 
   if (data !== null) {
@@ -79,6 +85,8 @@ export const invalidateCache = async (
   key: string,
   userId: string
 ): Promise<void> => {
+  if (!isRedisReady()) return;
+
   const indexKey = `user-session-index:${userId}`;
   await redisClient.sRem(indexKey, key);
   await redisClient.del(key);
@@ -86,6 +94,8 @@ export const invalidateCache = async (
 
 // DONE: Create a utility function to get cache without setting it
 export const getCache = async (key: string): Promise<any> => {
+  if (!isRedisReady()) return null;
+
   const data = await redisClient.get(key);
   if (!data) return null;
   const raw = typeof data === 'string' ? data : data.toString();
@@ -99,12 +109,16 @@ export const setCache = async (
   value: any,
   expiration?: number
 ) => {
+  if (!isRedisReady()) return;
+
   await _addKeyAndIndex(key, userId, value, expiration);
 };
 
 export const getProductIdsByIntent = async (
   intentKey: string
 ): Promise<string[] | null> => {
+  if (!isRedisReady()) return null;
+
   const key = makeProductIntentCacheKey(intentKey);
   const data = await redisClient.get(key);
 
@@ -133,6 +147,8 @@ export const setProductIdsByIntent = async (
   intentKey: string,
   productIds: string[]
 ): Promise<void> => {
+  if (!isRedisReady()) return;
+
   const normalizedProductIds = Array.from(
     new Set(
       productIds.filter(
@@ -158,6 +174,8 @@ export const makeUserSessionCacheKey = (userId: string, sessionId: string) =>
 
 // DONE: create a utility function to delete all cache related to a user (e.g., on account deletion)
 export const deleteUserCache = async (userId: string): Promise<void> => {
+  if (!isRedisReady()) return;
+
   const indexKey = `user-session-index:${userId}`;
   const sessionKeys = await redisClient.sMembers(indexKey);
 

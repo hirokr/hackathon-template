@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
 				body: JSON.stringify({ email: trimmedEmail }),
 			});
 
-			const payload = await res.json();
+			await res.json().catch(() => null);
 			// Store email locally so verify page can show it
 			sessionStorage.setItem("authEmail", trimmedEmail);
 

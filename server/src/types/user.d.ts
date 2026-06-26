@@ -1,3 +1,5 @@
+export type Role = 'USER' | 'ADMIN';
+
 export type CreateUserDto = {
   email: string;
   name: string;
@@ -9,7 +11,9 @@ export type ReturnUserDto = {
   id: string;
   email: string;
   name: string;
+  role: Role;
   avatar?: string;
+  avatarUrl?: string;
   userBodyImageUrl?: string;
   age?: number;
   gender?: string;
@@ -17,7 +21,6 @@ export type ReturnUserDto = {
   interests?: string[];
   emailVerified: boolean;
   isActive: boolean;
-  age?: number;
 };
 
 export type UpdateUserProfileDto = {
@@ -29,7 +32,9 @@ export type UpdateUserProfileDto = {
   gender?: string;
   location?: string;
   interests?: string[];
-  verificationToken?: string;
+  verificationToken?: string | null;
+  passwordResetTokenHash?: string | null;
+  passwordResetExpiresAt?: Date | null;
   isActive?: boolean;
   deletedAt?: Date | null;
 };

@@ -1,47 +1,44 @@
+import { BACKEND_URL } from "@/constants/constants";
 import { createSession } from "@/lib/auth/session";
+import { Session } from "@/types/auth";
 import { redirect } from "next/navigation";
 import { NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
 	const { searchParams } = new URL(req.url);
+	const status = searchParams.get("status");
 
-	const userId = searchParams.get("id");
-	const name = searchParams.get("name");
-	const email = searchParams.get("email");
-	const avatarUrl =
-		searchParams.get("avatarUrl") || searchParams.get("avatar") || undefined;
-	const emailVerified = searchParams.get("emailVerified");
-	const isActive = searchParams.get("isActive");
-	const userBodyImageUrl = searchParams.get("userBodyImageUrl");
-	const age = searchParams.get("age");
-	const gender = searchParams.get("gender");
-	const location = searchParams.get("location");
-	const interests = searchParams.get("interests");
+	if (status !== "success") {
+		redirect("/auth/signin?error=google_oauth_failed");
+	}
 
-	const accessToken = searchParams.get("accessToken");
-	const refreshToken = searchParams.get("refreshToken");
+	const accessToken = req.cookies.get("accessToken")?.value;
+	const refreshToken = req.cookies.get("refreshToken")?.value;
 
-	if (!userId || !name || !email || !accessToken || !refreshToken) {
-		throw new Error("Invalid query parameters");
+	if (!accessToken || !refreshToken) {
+		redirect("/auth/signin?error=google_oauth_failed");
+	}
+
+	const response = await fetch(`${BACKEND_URL}/api/user/me`, {
+		headers: {
+			authorization: `Bearer ${accessToken}`,
+		},
+		cache: "no-store",
+	});
+
+	const payload = (await response.json().catch(() => null)) as
+		| {
+				success?: boolean;
+				data?: { user?: Session["user"] };
+		  }
+		| null;
+
+	if (!response.ok || !payload?.data?.user) {
+		redirect("/auth/signin?error=google_oauth_failed");
 	}
 
 	await createSession({
-		user: {
-			id: userId,
-			name,
-			email,
-			avatarUrl,
-			emailVerified: emailVerified === "true",
-			isActive: isActive === "true",
-			userBodyImageUrl: userBodyImageUrl || null,
-			age: age ? Number(age) : null,
-			gender: gender || null,
-			location: location || null,
-			interests: interests
-				? interests.split(",")
-				: null,
-
-		},
+		user: payload.data.user,
 		accessToken,
 		refreshToken,
 	});

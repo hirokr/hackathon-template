@@ -6,6 +6,17 @@ import { getSetCache, makeUserSessionCacheKey } from '#src/utils/redis.ts';
 import { isValidSession } from '#src/services/token.service.ts';
 import { z, ZodError } from 'zod/v3';
 import { sendApiError } from '#src/utils/api-response.ts';
+import { findUserById } from '#src/services/user.service.ts';
+
+const getAccessTokenFromRequest = (req: AuthRequest) => {
+  const authHeader = req.headers.authorization;
+
+  if (authHeader?.startsWith('Bearer ')) {
+    return authHeader.split(' ')[1];
+  }
+
+  return req.cookies?.accessToken;
+};
 
 export const authMiddleware = async (
   req: AuthRequest,
@@ -13,13 +24,11 @@ export const authMiddleware = async (
   next: NextFunction
 ) => {
   try {
-    const authHeader = req.headers.authorization;
+    const token = getAccessTokenFromRequest(req);
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!token) {
       return sendApiError(res, { status: 401, message: 'Unauthorized' });
     }
-
-    const token = authHeader.split(' ')[1];
 
     const getData = await verifyAccessToken(token);
     const { userId, sessionId } = getData || {};
@@ -43,8 +52,17 @@ export const authMiddleware = async (
       });
     }
 
+    const user = await findUserById(userId);
+    if (!user || !user.isActive) {
+      return sendApiError(res, {
+        status: 401,
+        message: 'User is inactive or deleted',
+      });
+    }
+
     (req as AuthRequest).userId = userId;
     (req as AuthRequest).sessionId = sessionId;
+    (req as AuthRequest).role = user.role;
     next();
   } catch (err) {
     return sendApiError(res, {

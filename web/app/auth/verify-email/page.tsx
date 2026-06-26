@@ -12,7 +12,10 @@ export default function EmailVerifyPage() {
 	const searchParams = useSearchParams();
 	const [code, setCode] = useState(["", "", "", "", "", ""]);
 	const inputs = useRef<(HTMLInputElement | null)[]>([]);
-	const [storedEmail, setStoredEmail] = useState("");
+	const [storedEmail] = useState(() => {
+		if (typeof window === "undefined") return "";
+		return sessionStorage.getItem("authEmail") || "";
+	});
 	const emailFromQuery = searchParams.get("email");
 	const tokenFromQuery = searchParams.get("token");
 	const userIdFromQuery = searchParams.get("id");
@@ -21,11 +24,6 @@ export default function EmailVerifyPage() {
 		emailFromQuery && emailFromQuery.trim()
 			? emailFromQuery
 			: storedEmail || "your email";
-
-	useEffect(() => {
-		const sessionEmail = sessionStorage.getItem("authEmail") || "";
-		setStoredEmail(sessionEmail);
-	}, []);
 
 	useEffect(() => {
 		if (!tokenFromQuery) return;
@@ -105,6 +103,7 @@ export default function EmailVerifyPage() {
 				onChangeDigit={handleChange}
 				onKeyDownDigit={handleKeyDown}
 				setInputRef={setInputRef}
+				onSubmit={handleSubmitToken}
 			/>
 			<VerificationFooterLinks />
 		</AuthPageShell>

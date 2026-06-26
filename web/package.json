@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "check": "bun run typecheck && bun run lint && bun run build",
+    "check:fast": "bun run typecheck"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

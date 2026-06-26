@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import {
   findUserByEmail,
   findUserById,
+  findUserByPasswordResetTokenHash,
   findUserByVerificationToken,
   updateUserPassword,
   updateUserProfile,
@@ -16,6 +17,7 @@ import {
 import {
   createRandomToken,
   generateAccessToken,
+  hashTokenCrypto,
 } from '#src/utils/jwt/tokens.ts';
 import { clearTokens } from '#src/utils/jwt/tokens.ts';
 import {
@@ -169,7 +171,12 @@ export const forgotPassword = async (req: Request, res: Response) => {
     // Generate password reset token (valid for 1 hour)
     const resetToken = createRandomToken();
 
-    await updateUserProfile({ userId: user.id, verificationToken: resetToken });
+    const resetTokenHash = hashTokenCrypto(resetToken);
+    await updateUserProfile({
+      userId: user.id,
+      passwordResetTokenHash: resetTokenHash,
+      passwordResetExpiresAt: new Date(Date.now() + 60 * 60 * 1000),
+    });
 
     await sendPasswordResetEmail({
       to: user.email,
@@ -216,7 +223,8 @@ export const resetPassword = async (req: Request, res: Response) => {
       });
     }
 
-    const user = await findUserByVerificationToken(token);
+    const tokenHash = hashTokenCrypto(token);
+    const user = await findUserByPasswordResetTokenHash(tokenHash);
     if (!user) {
       return sendApiError(res, {
         status: 400,
@@ -227,6 +235,11 @@ export const resetPassword = async (req: Request, res: Response) => {
     // Hash the new password and update it in the database
     const newPasswordHash = await hashing(newPassword);
     await updateUserPassword(user.id, newPasswordHash);
+    await updateUserProfile({
+      userId: user.id,
+      passwordResetTokenHash: null,
+      passwordResetExpiresAt: null,
+    });
 
     return sendApiSuccess(res, { message: 'Password reset successfully' });
   } catch (error) {

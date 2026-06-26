@@ -3,6 +3,7 @@ import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 
 // 1. We cast mocks to <any> to prevent "Argument of type X is not assignable to parameter of type never" errors.
 const mockFindUserByEmail = jest.fn<any>();
+const mockFindUserById = jest.fn<any>();
 const mockCreateUser = jest.fn<any>();
 const mockUpdateUserPassword = jest.fn<any>();
 const mockVerifyHash = jest.fn<any>();
@@ -26,6 +27,8 @@ const mockIsValidSession = jest.fn<any>();
 const mockGetSetCache = jest.fn<any>();
 const mockSetCache = jest.fn<any>();
 const mockInvalidateCache = jest.fn<any>();
+const mockSendVerificationEmail = jest.fn<any>();
+let mockGoogleUser: any = null;
 
 // 2. Mock Modules
 jest.unstable_mockModule('#src/config/google.config.ts', () => ({}));
@@ -34,8 +37,9 @@ jest.unstable_mockModule('#src/services/user.service.ts', () => ({
   findUserByEmail: mockFindUserByEmail,
   createUser: mockCreateUser,
   updateUserPassword: mockUpdateUserPassword,
-  findUserById: jest.fn(),
+  findUserById: mockFindUserById,
   findUserByVerificationToken: jest.fn(),
+  findUserByPasswordResetTokenHash: jest.fn(),
   updateUserProfile: jest.fn(),
   verifyUserEmail: jest.fn(),
 }));
@@ -73,6 +77,12 @@ jest.unstable_mockModule('#src/utils/redis.ts', () => ({
     `user-session:${userId}:${sessionId}`,
 }));
 
+jest.unstable_mockModule('#src/utils/mail/sendMail.ts', () => ({
+  sendVerificationEmail: mockSendVerificationEmail,
+  sendWelcomeEmail: jest.fn(),
+  sendPasswordResetEmail: jest.fn(),
+}));
+
 jest.unstable_mockModule('passport', () => ({
   default: {
     initialize: () => (req: any, _res: any, next: any) => {
@@ -83,12 +93,31 @@ jest.unstable_mockModule('passport', () => ({
       req.logout = (cb: any) => cb();
       next();
     },
-    authenticate: () => (req: any, _res: any, next: any) => next(),
+    authenticate: () => (req: any, _res: any, next: any) => {
+      if (mockGoogleUser) {
+        req.user = mockGoogleUser;
+      }
+      next();
+    },
   },
 }));
 
 // 3. Dynamic import of the app
 const { default: app } = await import('#src/app.ts');
+
+describe('Health route', () => {
+  it('returns OK status for GET /health', async () => {
+    const response = await request(app).get('/health');
+
+    expect(response.status).toBe(200);
+    expect(response.body.data).toEqual(
+      expect.objectContaining({
+        status: 'OK',
+        uptime: expect.any(Number),
+      })
+    );
+  });
+});
 
 describe('Auth routes', () => {
   beforeEach(() => {
@@ -98,11 +127,18 @@ describe('Auth routes', () => {
     mockGetSetCache.mockImplementation(async (_key: string, cb: any) => {
       return cb ? await cb() : null;
     });
+    mockFindUserById.mockResolvedValue({
+      id: 'user-1',
+      role: 'USER',
+      isActive: true,
+    });
+    mockSendVerificationEmail.mockResolvedValue(undefined);
+    mockGoogleUser = null;
   });
 
-  describe('POST /auth/signup', () => {
+  describe('POST /api/auth/signup', () => {
     it('returns 400 when required fields are missing', async () => {
-      const response = await request(app).post('/auth/signup').send({});
+      const response = await request(app).post('/api/auth/signup').send({});
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
@@ -111,7 +147,7 @@ describe('Auth routes', () => {
 
     it('returns 400 when name is too short', async () => {
       const response = await request(app)
-        .post('/auth/signup')
+        .post('/api/auth/signup')
         .send({ email: 'test@example.com', password: 'Password1!', name: 'A' });
 
       expect(response.status).toBe(400);
@@ -122,7 +158,7 @@ describe('Auth routes', () => {
     });
 
     it('returns 400 when password is too weak', async () => {
-      const response = await request(app).post('/auth/signup').send({
+      const response = await request(app).post('/api/auth/signup').send({
         email: 'test@example.com',
         password: 'weak',
         name: 'John Doe',
@@ -133,7 +169,7 @@ describe('Auth routes', () => {
     });
 
     it('returns 400 when password lacks special character', async () => {
-      const response = await request(app).post('/auth/signup').send({
+      const response = await request(app).post('/api/auth/signup').send({
         email: 'test@example.com',
         password: 'Password1',
         name: 'John Doe',
@@ -144,7 +180,7 @@ describe('Auth routes', () => {
     });
 
     it('returns 400 when password lacks number', async () => {
-      const response = await request(app).post('/auth/signup').send({
+      const response = await request(app).post('/api/auth/signup').send({
         email: 'test@example.com',
         password: 'Password!',
         name: 'John Doe',
@@ -155,7 +191,7 @@ describe('Auth routes', () => {
     });
 
     it('returns 400 when email is invalid', async () => {
-      const response = await request(app).post('/auth/signup').send({
+      const response = await request(app).post('/api/auth/signup').send({
         email: 'not-an-email',
         password: 'Password1!',
         name: 'John Doe',
@@ -171,7 +207,7 @@ describe('Auth routes', () => {
         passwordHash: 'hashed-pass',
       });
 
-      const response = await request(app).post('/auth/signup').send({
+      const response = await request(app).post('/api/auth/signup').send({
         email: 'test@example.com',
         password: 'Password1!',
         name: 'John Doe',
@@ -192,7 +228,7 @@ describe('Auth routes', () => {
         isActive: false,
       });
 
-      const response = await request(app).post('/auth/signup').send({
+      const response = await request(app).post('/api/auth/signup').send({
         email: 'test@example.com',
         password: 'Password1!',
         name: 'John Doe',
@@ -218,6 +254,7 @@ describe('Auth routes', () => {
         id: 'user-1',
         email: 'test@example.com',
         name: 'John Doe',
+        role: 'USER',
         passwordHash: ' ',
         emailVerified: true,
         isActive: true,
@@ -225,7 +262,7 @@ describe('Auth routes', () => {
       mockHashing.mockResolvedValue('linked-hashed-pass');
       mockUpdateUserPassword.mockResolvedValue(undefined);
 
-      const response = await request(app).post('/auth/signup').send({
+      const response = await request(app).post('/api/auth/signup').send({
         email: 'test@example.com',
         password: 'Password1!',
         name: 'John Doe',
@@ -248,7 +285,7 @@ describe('Auth routes', () => {
       mockHashing.mockResolvedValue('hashed-pass');
       mockCreateUser.mockRejectedValue(new Error('db down'));
 
-      const response = await request(app).post('/auth/signup').send({
+      const response = await request(app).post('/api/auth/signup').send({
         email: 'test@example.com',
         password: 'Password1!',
         name: 'John Doe',
@@ -259,10 +296,10 @@ describe('Auth routes', () => {
     });
   });
 
-  describe('POST /auth/signin', () => {
+  describe('POST /api/auth/signin', () => {
     it('returns 400 when password is too short', async () => {
       const response = await request(app)
-        .post('/auth/signin')
+        .post('/api/auth/signin')
         .send({ email: 'test@example.com', password: 'short' });
 
       expect(response.status).toBe(400);
@@ -272,7 +309,7 @@ describe('Auth routes', () => {
 
     it('returns 400 when email is invalid', async () => {
       const response = await request(app)
-        .post('/auth/signin')
+        .post('/api/auth/signin')
         .send({ email: 'not-an-email', password: 'Password1!' });
 
       expect(response.status).toBe(400);
@@ -283,7 +320,7 @@ describe('Auth routes', () => {
       mockFindUserByEmail.mockResolvedValue(null);
 
       const response = await request(app)
-        .post('/auth/signin')
+        .post('/api/auth/signin')
         .send({ email: 'test@example.com', password: 'Password1!' });
 
       expect(response.status).toBe(400);
@@ -305,7 +342,7 @@ describe('Auth routes', () => {
       mockVerifyHash.mockResolvedValue(false);
 
       const response = await request(app)
-        .post('/auth/signin')
+        .post('/api/auth/signin')
         .send({ email: 'test@example.com', password: 'WrongPass1!' });
 
       expect(response.status).toBe(400);
@@ -323,6 +360,7 @@ describe('Auth routes', () => {
         passwordHash: 'hashed-pass',
         emailVerified: true,
         isActive: true,
+        deletedAt: null,
       });
       mockVerifyHash.mockResolvedValue(true);
       mockCreateRandomToken.mockReturnValue('session-1');
@@ -334,7 +372,7 @@ describe('Auth routes', () => {
       mockSaveRefreshToken.mockResolvedValue(undefined);
 
       const response = await request(app)
-        .post('/auth/signin')
+        .post('/api/auth/signin')
         .send({ email: 'test@example.com', password: 'Password1!' });
 
       expect(response.status).toBe(200);
@@ -359,6 +397,11 @@ describe('Auth routes', () => {
         'refresh-1',
         'access-1'
       );
+      expect(mockSetCache).toHaveBeenCalledWith(
+        'user-session:user-1:session-1',
+        'user-1',
+        true
+      );
     });
 
     it('does not leak password hash in response', async () => {
@@ -369,6 +412,7 @@ describe('Auth routes', () => {
         passwordHash: 'hashed-pass',
         emailVerified: true,
         isActive: true,
+        deletedAt: null,
       });
       mockVerifyHash.mockResolvedValue(true);
       mockCreateRandomToken.mockReturnValue('session-1');
@@ -379,22 +423,43 @@ describe('Auth routes', () => {
       mockHashTokenCrypto.mockReturnValue('hashed-refresh');
 
       const response = await request(app)
-        .post('/auth/signin')
+        .post('/api/auth/signin')
         .send({ email: 'test@example.com', password: 'Password1!' });
 
       expect(response.body.data.user).toEqual({
         id: 'user-1',
         email: 'test@example.com',
         name: 'John Doe',
+        role: 'USER',
         emailVerified: true,
         isActive: true,
       });
     });
+
+    it('blocks inactive users from signing in', async () => {
+      mockFindUserByEmail.mockResolvedValue({
+        id: 'user-1',
+        email: 'test@example.com',
+        name: 'John Doe',
+        passwordHash: 'hashed-pass',
+        emailVerified: true,
+        isActive: false,
+        deletedAt: null,
+      });
+
+      const response = await request(app)
+        .post('/api/auth/signin')
+        .send({ email: 'test@example.com', password: 'Password1!' });
+
+      expect(response.status).toBe(403);
+      expect(response.body).toHaveProperty('message', 'Account is inactive');
+      expect(mockVerifyHash).not.toHaveBeenCalled();
+    });
   });
 
-  describe('GET /auth/refresh', () => {
+  describe('GET /api/auth/refresh', () => {
     it('returns 401 when refresh token cookie is missing', async () => {
-      const response = await request(app).get('/auth/refresh');
+      const response = await request(app).get('/api/auth/refresh');
 
       expect(response.status).toBe(401);
       expect(response.body).toHaveProperty('message', 'Refresh token missing');
@@ -404,7 +469,7 @@ describe('Auth routes', () => {
       mockVerifyRefreshToken.mockResolvedValue(null);
 
       const response = await request(app)
-        .get('/auth/refresh')
+        .get('/api/auth/refresh')
         .set('Cookie', 'refreshToken=bad');
 
       expect(response.status).toBe(401);
@@ -417,7 +482,7 @@ describe('Auth routes', () => {
       mockFindRefreshToken.mockResolvedValue(null);
 
       const response = await request(app)
-        .get('/auth/refresh')
+        .get('/api/auth/refresh')
         .set('Cookie', 'refreshToken=valid');
 
       expect(response.status).toBe(401);
@@ -439,7 +504,7 @@ describe('Auth routes', () => {
       // mockInvalidateCache.mockResolvedValue(undefined);
 
       const response = await request(app)
-        .get('/auth/refresh')
+        .get('/api/auth/refresh')
         .set('Cookie', 'refreshToken=valid');
 
       expect(response.status).toBe(200);
@@ -467,7 +532,7 @@ describe('Auth routes', () => {
       });
 
       await request(app)
-        .get('/auth/refresh')
+        .get('/api/auth/refresh')
         .set('Cookie', 'refreshToken=valid');
 
       expect(mockRevokeSession).toHaveBeenCalledWith('user-1', 'old-session');
@@ -475,9 +540,9 @@ describe('Auth routes', () => {
     });
   });
 
-  describe('GET /auth/signout', () => {
+  describe('GET /api/auth/signout', () => {
     it('returns 401 when missing auth header', async () => {
-      const response = await request(app).get('/auth/signout');
+      const response = await request(app).get('/api/auth/signout');
 
       expect(response.status).toBe(401);
       expect(response.body).toHaveProperty('message', 'Unauthorized');
@@ -485,7 +550,7 @@ describe('Auth routes', () => {
 
     it('returns 401 when auth header is malformed', async () => {
       const response = await request(app)
-        .get('/auth/signout')
+        .get('/api/auth/signout')
         .set('Authorization', 'InvalidFormat');
 
       expect(response.status).toBe(401);
@@ -496,7 +561,7 @@ describe('Auth routes', () => {
       mockVerifyAccessToken.mockResolvedValue(null);
 
       const response = await request(app)
-        .get('/auth/signout')
+        .get('/api/auth/signout')
         .set('Authorization', 'Bearer invalid-token');
 
       expect(response.status).toBe(401);
@@ -514,11 +579,14 @@ describe('Auth routes', () => {
       mockClearTokens.mockResolvedValue(undefined);
 
       const response = await request(app)
-        .get('/auth/signout')
+        .get('/api/auth/signout')
         .set('Authorization', 'Bearer access-1');
 
       expect(response.status).toBe(200);
-      expect(response.text).toBe('Signout Success!');
+      expect(response.body).toEqual({
+        success: true,
+        message: 'Signout success',
+      });
       expect(mockDeleteCurrentRefreshToken).toHaveBeenCalledWith('session-1');
       expect(mockRevokeSession).toHaveBeenCalledWith('user-1', 'session-1');
       expect(mockInvalidateCache).toHaveBeenCalledWith(
@@ -526,6 +594,24 @@ describe('Auth routes', () => {
         'user-1'
       );
       expect(mockClearTokens).toHaveBeenCalled();
+    });
+
+    it('accepts access token from cookie for protected routes', async () => {
+      mockVerifyAccessToken.mockResolvedValue({
+        userId: 'user-1',
+        sessionId: 'session-1',
+      });
+      mockIsValidSession.mockResolvedValue(true);
+      mockDeleteCurrentRefreshToken.mockResolvedValue(undefined);
+      mockRevokeSession.mockResolvedValue(undefined);
+      mockInvalidateCache.mockResolvedValue(undefined);
+      mockClearTokens.mockResolvedValue(undefined);
+
+      const response = await request(app)
+        .get('/api/auth/signout')
+        .set('Cookie', 'accessToken=access-1');
+
+      expect(response.status).toBe(200);
     });
 
     it('invalidates cache on signout', async () => {
@@ -536,13 +622,86 @@ describe('Auth routes', () => {
       mockIsValidSession.mockResolvedValue(true);
 
       await request(app)
-        .get('/auth/signout')
+        .get('/api/auth/signout')
         .set('Authorization', 'Bearer access-1');
 
       expect(mockInvalidateCache).toHaveBeenCalledWith(
         'user-session:user-1:session-1',
         'user-1'
       );
+    });
+  });
+
+  describe('GET /api/user/admin/check', () => {
+    it('returns 403 for non-admin user on admin route', async () => {
+      mockVerifyAccessToken.mockResolvedValue({
+        userId: 'user-1',
+        sessionId: 'session-1',
+      });
+      mockIsValidSession.mockResolvedValue(true);
+      mockFindUserById.mockResolvedValue({
+        id: 'user-1',
+        role: 'USER',
+        isActive: true,
+      });
+
+      const response = await request(app)
+        .get('/api/user/admin/check')
+        .set('Authorization', 'Bearer access-1');
+
+      expect(response.status).toBe(403);
+    });
+
+    it('allows admin user on admin route', async () => {
+      mockVerifyAccessToken.mockResolvedValue({
+        userId: 'admin-1',
+        sessionId: 'session-1',
+      });
+      mockIsValidSession.mockResolvedValue(true);
+      mockFindUserById.mockResolvedValue({
+        id: 'admin-1',
+        role: 'ADMIN',
+        isActive: true,
+      });
+
+      const response = await request(app)
+        .get('/api/user/admin/check')
+        .set('Authorization', 'Bearer access-1');
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.allowed).toBe(true);
+    });
+  });
+
+  describe('GET /api/auth/google/callback', () => {
+    it('does not put tokens in the google redirect URL', async () => {
+      mockGoogleUser = {
+        id: 'google-user-1',
+        email: 'google@example.com',
+        name: 'Google User',
+        role: 'USER',
+        emailVerified: true,
+        isActive: true,
+      };
+      mockFindUserByEmail.mockResolvedValue(mockGoogleUser);
+      mockCreateRandomToken.mockReturnValue('session-1');
+      mockGenerateTokens.mockResolvedValue({
+        accessToken: 'access-1',
+        refreshToken: 'refresh-1',
+      });
+      mockHashTokenCrypto.mockReturnValue('hashed-refresh');
+      mockSaveRefreshToken.mockResolvedValue(undefined);
+      mockSetCache.mockResolvedValue(undefined);
+      mockSaveToCookie.mockResolvedValue(undefined);
+
+      const response = await request(app).get('/api/auth/google/callback');
+
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toContain(
+        '/api/auth/google/callback?status=success'
+      );
+      expect(response.headers.location).not.toContain('accessToken=');
+      expect(response.headers.location).not.toContain('refreshToken=');
     });
   });
 });

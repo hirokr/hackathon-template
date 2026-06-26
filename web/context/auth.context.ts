@@ -110,7 +110,11 @@ export function AuthProvider({
 	}, []);
 
 	useEffect(() => {
-		void refreshSession();
+		const timeoutId = window.setTimeout(() => {
+			void refreshSession();
+		}, 0);
+
+		return () => window.clearTimeout(timeoutId);
 	}, [refreshSession]);
 
 	const value = useMemo<AuthContextValue>(

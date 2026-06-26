@@ -5,6 +5,7 @@ import {
   ReturnUserDto,
   UpdateUserProfileDto,
 } from '#src/types/user.js';
+import { toPublicUser } from '#src/utils/auth/public-user.ts';
 
 function toPrismaGender(gender: string): Gender | undefined {
   const normalizedGender = gender.trim().toUpperCase();
@@ -53,6 +54,7 @@ export async function findUserById(id: string) {
         passwordHash: true,
         oauthProvider: true,
         oauthId: true,
+        role: true,
         emailVerified: true,
         isActive: true,
         deletedAt: true,
@@ -92,16 +94,7 @@ export async function createUser(data: CreateUserDto): Promise<ReturnUserDto> {
       },
     });
 
-    const newUser: ReturnUserDto = {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      avatar: user.avatarUrl || undefined,
-      emailVerified: user.emailVerified,
-      isActive: user.isActive,
-    };
-
-    return newUser;
+    return toPublicUser(user);
   } catch (err) {
     console.error('Error in creating user:', err);
     throw err;
@@ -126,20 +119,7 @@ export async function updateUserProfile(
       },
     });
 
-    return {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      avatar: user.avatarUrl || undefined,
-      age: user.age || undefined,
-      gender: user.gender || undefined,
-      location: user.location || undefined,
-      interests: user.interests || undefined,
-
-      emailVerified: user.emailVerified,
-      isActive: user.isActive,
-      userBodyImageUrl: user.userBodyImageUrl || undefined,
-    } as ReturnUserDto;
+    return toPublicUser(user);
   } catch (err) {
     console.error('Error in updating user profile:', err);
     throw err;
@@ -183,6 +163,22 @@ export async function findUserByVerificationToken(token: any) {
       where: {
         verificationToken: token,
         deletedAt: null,
+      },
+    });
+    return user;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function findUserByPasswordResetTokenHash(tokenHash: string) {
+  try {
+    const user = await prisma.user.findFirst({
+      where: {
+        passwordResetTokenHash: tokenHash,
+        passwordResetExpiresAt: { gt: new Date() },
+        deletedAt: null,
+        isActive: true,
       },
     });
     return user;

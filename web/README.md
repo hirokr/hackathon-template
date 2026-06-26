@@ -1,15 +1,22 @@
-# tryora_web
+# Next.js Frontend
 
-To install dependencies:
+Frontend for the template. It uses server actions for email auth, the backend Google OAuth callback, and an httpOnly `session` cookie for browser sessions.
+
+## Setup
 
 ```bash
 bun install
+cp .env.example .env
+bun run dev
 ```
 
-To run:
+## Verification
 
 ```bash
-bun run 
+bun run check
 ```
 
-This project was created using `bun init` in bun v1.3.14. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+## Required Env
+
+- `SESSION_SECRET_KEY`
+- `NEXT_PUBLIC_API_URL` or the project-specific backend URL variable used by `constants/constants.ts`

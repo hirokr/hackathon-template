@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 import { refreshToken } from "@/lib/auth/auth";
 import { getSession, updateTokens } from "@/lib/auth/session";

@@ -15,6 +15,11 @@ enum Gender {
   UNISEX
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 // USER
 
 model User {
@@ -29,10 +34,13 @@ model User {
   gender           Gender   @default(UNISEX)
   interests        String[] @map("interests")
   location         String?  @db.VarChar(255)
+  role             Role     @default(USER)
 
-  verificationToken String? @map("verification_token") @db.VarChar(255)
-  emailVerified     Boolean @default(false) @map("email_verified")
-  isActive          Boolean @default(true) @map("is_active")
+  verificationToken       String?   @map("verification_token") @db.VarChar(255)
+  passwordResetTokenHash  String?   @map("password_reset_token_hash") @db.VarChar(255)
+  passwordResetExpiresAt  DateTime? @map("password_reset_expires_at")
+  emailVerified           Boolean   @default(false) @map("email_verified")
+  isActive                Boolean   @default(true) @map("is_active")
 
   oauthProvider String? @map("oauth_provider") @db.VarChar(50)
   oauthId       String? @map("oauth_id") @db.VarChar(255)
@@ -45,6 +53,8 @@ model User {
 
   @@unique([oauthProvider, oauthId])
   @@index([email])
+  @@index([role])
+  @@index([passwordResetTokenHash])
   @@index([deletedAt])
   @@map("users")
 }
@@ -67,6 +77,6 @@ model RefreshToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([userId, sessionId, isActive, expiresAt])
   @@map("refresh_tokens")
 }
-

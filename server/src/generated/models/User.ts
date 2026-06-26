@@ -45,7 +45,10 @@ export type UserMinAggregateOutputType = {
   ethnicity: string | null
   gender: $Enums.Gender | null
   location: string | null
+  role: $Enums.Role | null
   verificationToken: string | null
+  passwordResetTokenHash: string | null
+  passwordResetExpiresAt: Date | null
   emailVerified: boolean | null
   isActive: boolean | null
   oauthProvider: string | null
@@ -66,7 +69,10 @@ export type UserMaxAggregateOutputType = {
   ethnicity: string | null
   gender: $Enums.Gender | null
   location: string | null
+  role: $Enums.Role | null
   verificationToken: string | null
+  passwordResetTokenHash: string | null
+  passwordResetExpiresAt: Date | null
   emailVerified: boolean | null
   isActive: boolean | null
   oauthProvider: string | null
@@ -88,7 +94,10 @@ export type UserCountAggregateOutputType = {
   gender: number
   interests: number
   location: number
+  role: number
   verificationToken: number
+  passwordResetTokenHash: number
+  passwordResetExpiresAt: number
   emailVerified: number
   isActive: number
   oauthProvider: number
@@ -119,7 +128,10 @@ export type UserMinAggregateInputType = {
   ethnicity?: true
   gender?: true
   location?: true
+  role?: true
   verificationToken?: true
+  passwordResetTokenHash?: true
+  passwordResetExpiresAt?: true
   emailVerified?: true
   isActive?: true
   oauthProvider?: true
@@ -140,7 +152,10 @@ export type UserMaxAggregateInputType = {
   ethnicity?: true
   gender?: true
   location?: true
+  role?: true
   verificationToken?: true
+  passwordResetTokenHash?: true
+  passwordResetExpiresAt?: true
   emailVerified?: true
   isActive?: true
   oauthProvider?: true
@@ -162,7 +177,10 @@ export type UserCountAggregateInputType = {
   gender?: true
   interests?: true
   location?: true
+  role?: true
   verificationToken?: true
+  passwordResetTokenHash?: true
+  passwordResetExpiresAt?: true
   emailVerified?: true
   isActive?: true
   oauthProvider?: true
@@ -271,7 +289,10 @@ export type UserGroupByOutputType = {
   gender: $Enums.Gender
   interests: string[]
   location: string | null
+  role: $Enums.Role
   verificationToken: string | null
+  passwordResetTokenHash: string | null
+  passwordResetExpiresAt: Date | null
   emailVerified: boolean
   isActive: boolean
   oauthProvider: string | null
@@ -316,7 +337,10 @@ export type UserWhereInput = {
   gender?: Prisma.EnumGenderFilter<"User"> | $Enums.Gender
   interests?: Prisma.StringNullableListFilter<"User">
   location?: Prisma.StringNullableFilter<"User"> | string | null
+  role?: Prisma.EnumRoleFilter<"User"> | $Enums.Role
   verificationToken?: Prisma.StringNullableFilter<"User"> | string | null
+  passwordResetTokenHash?: Prisma.StringNullableFilter<"User"> | string | null
+  passwordResetExpiresAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   emailVerified?: Prisma.BoolFilter<"User"> | boolean
   isActive?: Prisma.BoolFilter<"User"> | boolean
   oauthProvider?: Prisma.StringNullableFilter<"User"> | string | null
@@ -339,7 +363,10 @@ export type UserOrderByWithRelationInput = {
   gender?: Prisma.SortOrder
   interests?: Prisma.SortOrder
   location?: Prisma.SortOrderInput | Prisma.SortOrder
+  role?: Prisma.SortOrder
   verificationToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  passwordResetTokenHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  passwordResetExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   emailVerified?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   oauthProvider?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -366,7 +393,10 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   gender?: Prisma.EnumGenderFilter<"User"> | $Enums.Gender
   interests?: Prisma.StringNullableListFilter<"User">
   location?: Prisma.StringNullableFilter<"User"> | string | null
+  role?: Prisma.EnumRoleFilter<"User"> | $Enums.Role
   verificationToken?: Prisma.StringNullableFilter<"User"> | string | null
+  passwordResetTokenHash?: Prisma.StringNullableFilter<"User"> | string | null
+  passwordResetExpiresAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   emailVerified?: Prisma.BoolFilter<"User"> | boolean
   isActive?: Prisma.BoolFilter<"User"> | boolean
   oauthProvider?: Prisma.StringNullableFilter<"User"> | string | null
@@ -389,7 +419,10 @@ export type UserOrderByWithAggregationInput = {
   gender?: Prisma.SortOrder
   interests?: Prisma.SortOrder
   location?: Prisma.SortOrderInput | Prisma.SortOrder
+  role?: Prisma.SortOrder
   verificationToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  passwordResetTokenHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  passwordResetExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   emailVerified?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   oauthProvider?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -419,7 +452,10 @@ export type UserScalarWhereWithAggregatesInput = {
   gender?: Prisma.EnumGenderWithAggregatesFilter<"User"> | $Enums.Gender
   interests?: Prisma.StringNullableListFilter<"User">
   location?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  role?: Prisma.EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
   verificationToken?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  passwordResetTokenHash?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  passwordResetExpiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   emailVerified?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   isActive?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   oauthProvider?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
@@ -441,7 +477,10 @@ export type UserCreateInput = {
   gender?: $Enums.Gender
   interests?: Prisma.UserCreateinterestsInput | string[]
   location?: string | null
+  role?: $Enums.Role
   verificationToken?: string | null
+  passwordResetTokenHash?: string | null
+  passwordResetExpiresAt?: Date | string | null
   emailVerified?: boolean
   isActive?: boolean
   oauthProvider?: string | null
@@ -464,7 +503,10 @@ export type UserUncheckedCreateInput = {
   gender?: $Enums.Gender
   interests?: Prisma.UserCreateinterestsInput | string[]
   location?: string | null
+  role?: $Enums.Role
   verificationToken?: string | null
+  passwordResetTokenHash?: string | null
+  passwordResetExpiresAt?: Date | string | null
   emailVerified?: boolean
   isActive?: boolean
   oauthProvider?: string | null
@@ -487,7 +529,10 @@ export type UserUpdateInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   interests?: Prisma.UserUpdateinterestsInput | string[]
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetTokenHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   oauthProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -510,7 +555,10 @@ export type UserUncheckedUpdateInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   interests?: Prisma.UserUpdateinterestsInput | string[]
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetTokenHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   oauthProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -533,7 +581,10 @@ export type UserCreateManyInput = {
   gender?: $Enums.Gender
   interests?: Prisma.UserCreateinterestsInput | string[]
   location?: string | null
+  role?: $Enums.Role
   verificationToken?: string | null
+  passwordResetTokenHash?: string | null
+  passwordResetExpiresAt?: Date | string | null
   emailVerified?: boolean
   isActive?: boolean
   oauthProvider?: string | null
@@ -555,7 +606,10 @@ export type UserUpdateManyMutationInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   interests?: Prisma.UserUpdateinterestsInput | string[]
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetTokenHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   oauthProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -577,7 +631,10 @@ export type UserUncheckedUpdateManyInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   interests?: Prisma.UserUpdateinterestsInput | string[]
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetTokenHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   oauthProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -612,7 +669,10 @@ export type UserCountOrderByAggregateInput = {
   gender?: Prisma.SortOrder
   interests?: Prisma.SortOrder
   location?: Prisma.SortOrder
+  role?: Prisma.SortOrder
   verificationToken?: Prisma.SortOrder
+  passwordResetTokenHash?: Prisma.SortOrder
+  passwordResetExpiresAt?: Prisma.SortOrder
   emailVerified?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   oauthProvider?: Prisma.SortOrder
@@ -637,7 +697,10 @@ export type UserMaxOrderByAggregateInput = {
   ethnicity?: Prisma.SortOrder
   gender?: Prisma.SortOrder
   location?: Prisma.SortOrder
+  role?: Prisma.SortOrder
   verificationToken?: Prisma.SortOrder
+  passwordResetTokenHash?: Prisma.SortOrder
+  passwordResetExpiresAt?: Prisma.SortOrder
   emailVerified?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   oauthProvider?: Prisma.SortOrder
@@ -658,7 +721,10 @@ export type UserMinOrderByAggregateInput = {
   ethnicity?: Prisma.SortOrder
   gender?: Prisma.SortOrder
   location?: Prisma.SortOrder
+  role?: Prisma.SortOrder
   verificationToken?: Prisma.SortOrder
+  passwordResetTokenHash?: Prisma.SortOrder
+  passwordResetExpiresAt?: Prisma.SortOrder
   emailVerified?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   oauthProvider?: Prisma.SortOrder
@@ -706,16 +772,20 @@ export type UserUpdateinterestsInput = {
   push?: string | string[]
 }
 
+export type EnumRoleFieldUpdateOperationsInput = {
+  set?: $Enums.Role
+}
+
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
+}
+
 export type BoolFieldUpdateOperationsInput = {
   set?: boolean
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
-}
-
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
 }
 
 export type UserCreateNestedOneWithoutRefreshTokensInput = {
@@ -744,7 +814,10 @@ export type UserCreateWithoutRefreshTokensInput = {
   gender?: $Enums.Gender
   interests?: Prisma.UserCreateinterestsInput | string[]
   location?: string | null
+  role?: $Enums.Role
   verificationToken?: string | null
+  passwordResetTokenHash?: string | null
+  passwordResetExpiresAt?: Date | string | null
   emailVerified?: boolean
   isActive?: boolean
   oauthProvider?: string | null
@@ -766,7 +839,10 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   gender?: $Enums.Gender
   interests?: Prisma.UserCreateinterestsInput | string[]
   location?: string | null
+  role?: $Enums.Role
   verificationToken?: string | null
+  passwordResetTokenHash?: string | null
+  passwordResetExpiresAt?: Date | string | null
   emailVerified?: boolean
   isActive?: boolean
   oauthProvider?: string | null
@@ -804,7 +880,10 @@ export type UserUpdateWithoutRefreshTokensInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   interests?: Prisma.UserUpdateinterestsInput | string[]
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetTokenHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   oauthProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -826,7 +905,10 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   interests?: Prisma.UserUpdateinterestsInput | string[]
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetTokenHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   oauthProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -879,7 +961,10 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   gender?: boolean
   interests?: boolean
   location?: boolean
+  role?: boolean
   verificationToken?: boolean
+  passwordResetTokenHash?: boolean
+  passwordResetExpiresAt?: boolean
   emailVerified?: boolean
   isActive?: boolean
   oauthProvider?: boolean
@@ -903,7 +988,10 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   gender?: boolean
   interests?: boolean
   location?: boolean
+  role?: boolean
   verificationToken?: boolean
+  passwordResetTokenHash?: boolean
+  passwordResetExpiresAt?: boolean
   emailVerified?: boolean
   isActive?: boolean
   oauthProvider?: boolean
@@ -925,7 +1013,10 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   gender?: boolean
   interests?: boolean
   location?: boolean
+  role?: boolean
   verificationToken?: boolean
+  passwordResetTokenHash?: boolean
+  passwordResetExpiresAt?: boolean
   emailVerified?: boolean
   isActive?: boolean
   oauthProvider?: boolean
@@ -947,7 +1038,10 @@ export type UserSelectScalar = {
   gender?: boolean
   interests?: boolean
   location?: boolean
+  role?: boolean
   verificationToken?: boolean
+  passwordResetTokenHash?: boolean
+  passwordResetExpiresAt?: boolean
   emailVerified?: boolean
   isActive?: boolean
   oauthProvider?: boolean
@@ -957,7 +1051,7 @@ export type UserSelectScalar = {
   deletedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "name" | "avatarUrl" | "userBodyImageUrl" | "age" | "ethnicity" | "gender" | "interests" | "location" | "verificationToken" | "emailVerified" | "isActive" | "oauthProvider" | "oauthId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "name" | "avatarUrl" | "userBodyImageUrl" | "age" | "ethnicity" | "gender" | "interests" | "location" | "role" | "verificationToken" | "passwordResetTokenHash" | "passwordResetExpiresAt" | "emailVerified" | "isActive" | "oauthProvider" | "oauthId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   refreshTokens?: boolean | Prisma.User$refreshTokensArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -982,7 +1076,10 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     gender: $Enums.Gender
     interests: string[]
     location: string | null
+    role: $Enums.Role
     verificationToken: string | null
+    passwordResetTokenHash: string | null
+    passwordResetExpiresAt: Date | null
     emailVerified: boolean
     isActive: boolean
     oauthProvider: string | null
@@ -1425,7 +1522,10 @@ export interface UserFieldRefs {
   readonly gender: Prisma.FieldRef<"User", 'Gender'>
   readonly interests: Prisma.FieldRef<"User", 'String[]'>
   readonly location: Prisma.FieldRef<"User", 'String'>
+  readonly role: Prisma.FieldRef<"User", 'Role'>
   readonly verificationToken: Prisma.FieldRef<"User", 'String'>
+  readonly passwordResetTokenHash: Prisma.FieldRef<"User", 'String'>
+  readonly passwordResetExpiresAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly emailVerified: Prisma.FieldRef<"User", 'Boolean'>
   readonly isActive: Prisma.FieldRef<"User", 'Boolean'>
   readonly oauthProvider: Prisma.FieldRef<"User", 'String'>

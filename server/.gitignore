@@ -4,5 +4,8 @@ node_modules
 .env.production
 .neon_local/
 /logs
-/prisma/migrations
+/prisma/migrations/*
+!/prisma/migrations/
+!/prisma/migrations/20260626071500_add_roles_and_reset_token_expiry/
+!/prisma/migrations/20260626071500_add_roles_and_reset_token_expiry/migration.sql
 /prisma/generated

@@ -36,6 +36,7 @@ import {
   sendWelcomeEmail,
 } from '#src/utils/mail/sendMail.ts';
 import { sendApiError, sendApiSuccess } from '#src/utils/api-response.ts';
+import { toPublicUser } from '#src/utils/auth/public-user.ts';
 
 // TODO: Fix The Refresh Token Race Condition
 export const refresh = async (req: Request, res: Response) => {
@@ -122,7 +123,9 @@ export const signup = async (req: Request, res: Response) => {
             id: user.id,
             email: user.email,
             name: user.name,
+            role: user.role === 'ADMIN' ? 'ADMIN' : 'USER',
             avatar: user.avatarUrl || undefined,
+            avatarUrl: user.avatarUrl || undefined,
             emailVerified: user.emailVerified,
             isActive: user.isActive,
             userBodyImageUrl: user.userBodyImageUrl || undefined,
@@ -184,6 +187,13 @@ export const signin = async (req: Request, res: Response) => {
     });
   }
 
+  if (!user.isActive || user.deletedAt) {
+    return sendApiError(res, {
+      status: 403,
+      message: 'Account is inactive',
+    });
+  }
+
   const isPasswordValid = await verifyHash(
     user.passwordHash as string,
     password
@@ -211,18 +221,10 @@ export const signin = async (req: Request, res: Response) => {
     ip as string
   );
 
+  await setCache(makeUserSessionCacheKey(user.id, sessionId), user.id, true);
   await saveToCookie(res, refreshToken, accessToken);
 
-  const secureUser: ReturnUserDto = {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    avatar: user.avatarUrl || undefined,
-    emailVerified: user.emailVerified,
-    isActive: user.isActive,
-    userBodyImageUrl: user.userBodyImageUrl || undefined,
-    age: user.age || undefined,
-  };
+  const secureUser: ReturnUserDto = toPublicUser(user);
 
   sendApiSuccess(res, {
     message: 'Signin successful',
@@ -312,20 +314,20 @@ export const googleAuthCallback = [
       );
 
       // saving to cache for quick session validation
-      await setCache(
-        makeUserSessionCacheKey(user.id, newSessionId),
-        user.id,
-        refreshToken
-      );
+      await setCache(makeUserSessionCacheKey(user.id, newSessionId), user.id, true);
 
       const frontend = process.env.FRONTEND_URL || 'http://localhost:3000';
 
       const existingUser = await findUserByEmail(user.email);
 
+      await saveToCookie(res, refreshToken, accessToken);
+
+      const query = new URLSearchParams({
+        status: 'success',
+      }).toString();
+
       if (!existingUser) {
-        return res.redirect(
-          `${frontend}/api/auth/google/callback?id=${user.id}&email=${user.email}&name=${user.name}&avatar=${user.avatar || ''}&emailVerified=${user.emailVerified}&isActive=${user.isActive}&accessToken=${accessToken}&refreshToken=${refreshToken}&userBodyImageUrl=${user.userBodyImageUrl || ''}&age=${user.age || ''}`
-        );
+        return res.redirect(`${frontend}/api/auth/google/callback?${query}`);
       }
 
       sendWelcomeEmail({
@@ -334,9 +336,7 @@ export const googleAuthCallback = [
         dashboardLink: `${frontend}`, //TODO: add dashboard link
       });
 
-      return res.redirect(
-        `${frontend}/api/auth/google/callback?id=${user.id}&email=${user.email}&name=${user.name}&avatar=${user.avatar || ''}&emailVerified=${user.emailVerified}&isActive=${user.isActive}&accessToken=${accessToken}&refreshToken=${refreshToken}&userBodyImageUrl=${user.userBodyImageUrl || ''}&age=${user.age || ''}`
-      );
+      return res.redirect(`${frontend}/api/auth/google/callback?${query}`);
     } catch (error) {
       console.error('Error in Google auth callback:', error);
       const frontend = process.env.FRONTEND_URL || 'http://localhost:3000';

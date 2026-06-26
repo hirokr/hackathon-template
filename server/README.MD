@@ -1,44 +1,32 @@
-# The main todo file of the project
+# Express Backend
 
-## Resposilibity 
+Primary API for the template. It provides email auth, Google OAuth, JWT access tokens, Prisma-backed refresh sessions, role-based authorization, profile routes, and optional Redis session caching.
 
-### Backgorund Worker
- - Manage jobs
- - creates recomendations
+## Setup
 
-## General Tasks
+```bash
+bun install
+cp .env.example .env
+bun run db:migrate
+bun run db:gen
+bun run dev
+```
 
-- [x] User authentication
-- [x] User profile create
-- [x] User password recovary and rest
+## Verification
 
-## Mandatory tasks
+```bash
+bun run check
+bun run test:auth
+```
 
-- [x] generate a schema for for all the works
+## Auth Policy
 
-## Module - 1
+Inactive or deleted users cannot sign in. Email verification status is exposed to the app, but unverified users are allowed to sign in by default so hackathon teams can decide their own gating policy.
 
-- [x] get three images or link of the images, handle three images
-- [x] get user preferences
-- [x] generate 3d model of the base images
-- [x] store the model in the in a storage
-- [x] dress search api, search dresses in real time as a fallback, mainly search in the loal databse and then searchs the other sites for the real time search capabilities
-- [x] get the dresses filter with api and frontend
-- [x] create trending api to get the tending clothes. uses a separate table to store the tendings
+## RBAC
 
-## Module - 2
+Users have `USER` or `ADMIN` roles. Protected routes use `authMiddleware`; role-gated routes additionally use `requireRole(...)`.
 
-- [x] generate 3d mesh from each dress and store them in the database and the cache and the show and put color and patter on them
-- [ ] change color and patter on the dress image
+## Redis
 
-## Moduel - 3
-
-- [ ] select a body part to make them ware a accesories
-- [x] generate images of the user waring the dresses
-- [ ] Save the outfit waring localy and make wishlist
-- [ ] comaprison screen of the saved/ wishlist items
-- [ ] outfit sharing link
-- [ ] pose generator, make the image/3d model stand in a certain pose
-- [ ] make the wared dresses cache on the user machine
-- [ ] using the keyboard keys make the model interactive
-
+Redis is optional for local development. If Redis is not connected, cache helpers fall back to the database-backed session checks.

@@ -20,7 +20,8 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:5173',
-];
+  process.env.FRONTEND_URL,
+].filter((origin): origin is string => Boolean(origin));
 
 app.use(
   cors({
@@ -35,12 +36,14 @@ app.use(cookieParser());
 // Store sessions in PostgreSQL via Prisma
 app.use(
   session({
-    secret: 'cats',
+    secret: process.env.SESSION_SECRET || 'dev-session-secret',
     resave: false,
     saveUninitialized: true,
     // store: new PrismaSessionStore(),
     cookie: {
       secure: process.env.NODE_ENV === 'production',
+      sameSite:
+        (process.env.COOKIE_SAME_SITE as 'lax' | 'strict' | 'none') || 'lax',
       maxAge: 15 * 24 * 60 * 60 * 1000,
     },
   })
@@ -60,14 +63,18 @@ app.get('/', (req, res) => {
   res.status(200).send('Hello from Tryora!');
 });
 
+const healthPayload = () => ({
+  status: 'OK',
+  timestamp: new Date().toISOString(),
+  uptime: process.uptime(),
+});
+
+app.get('/health', (req, res) => {
+  sendApiSuccess(res, { data: healthPayload() });
+});
+
 app.head('/health', (req, res) => {
-  sendApiSuccess(res, {
-    data: {
-      status: 'OK',
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-    },
-  });
+  res.status(200).end();
 });
 
 app.get('/api', (req, res) => {
@@ -79,11 +86,12 @@ app.use('/api/user', usersRoutes);
 
 // Redis session store setup (commented out for now)
 export const redisClient = redis.createClient({
-  username: 'default',
+  username: process.env.REDIS_USERNAME || 'default',
   password: process.env.REDIS_PASSWORD,
   socket: {
-    host: process.env.REDIS_HOST,
-    port: Number(process.env.REDIS_PORT),
+    host: process.env.REDIS_HOST || 'localhost',
+    port: Number(process.env.REDIS_PORT || 6379),
+    reconnectStrategy: false,
   },
 });
 
