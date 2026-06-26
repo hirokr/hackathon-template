@@ -52,7 +52,7 @@ Modify:
 **Files:**
 - Modify after this task only if package manager lockfiles need regeneration: `server/bun.lock`, `web/bun.lock`
 
-- [ ] **Step 1: Install server dependencies**
+- [x] **Step 1: Install server dependencies**
 
 Run:
 
@@ -63,7 +63,7 @@ bun install
 
 Expected: `node_modules` exists under `server/`.
 
-- [ ] **Step 2: Install web dependencies**
+- [x] **Step 2: Install web dependencies**
 
 Run:
 
@@ -74,7 +74,7 @@ bun install
 
 Expected: `node_modules` exists under `web/`.
 
-- [ ] **Step 3: Run server typecheck/build and record failures**
+- [x] **Step 3: Run server typecheck/build and record failures**
 
 Run:
 
@@ -85,7 +85,7 @@ bun run build
 
 Expected before fixes: failures related to route/test mismatch or TypeScript issues are allowed. Save exact errors in the task notes.
 
-- [ ] **Step 4: Run web build and record failures**
+- [x] **Step 4: Run web build and record failures**
 
 Run:
 
@@ -96,7 +96,7 @@ bun run build
 
 Expected before fixes: failures for missing `@/lib/*` modules.
 
-- [ ] **Step 5: Commit dependency baseline if lockfiles changed**
+- [x] **Step 5: Commit dependency baseline if lockfiles changed**
 
 ```bash
 git add server/bun.lock web/bun.lock
@@ -118,7 +118,7 @@ git commit -m "chore: install template dependencies"
 - Create: `web/lib/UserPreference.ts`
 - Modify: `web/types/auth.d.ts`
 
-- [ ] **Step 1: Create `web/lib/utils.ts`**
+- [x] **Step 1: Create `web/lib/utils.ts`**
 
 ```ts
 import { clsx, type ClassValue } from "clsx";
@@ -129,7 +129,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 ```
 
-- [ ] **Step 2: Create `web/lib/api-response.ts`**
+- [x] **Step 2: Create `web/lib/api-response.ts`**
 
 ```ts
 import { NextResponse } from "next/server";
@@ -177,7 +177,7 @@ export function sendApiError({
 }
 ```
 
-- [ ] **Step 3: Update `web/types/auth.d.ts`**
+- [x] **Step 3: Update `web/types/auth.d.ts`**
 
 Use this exact session shape:
 
@@ -215,7 +215,7 @@ export type FormState =
 	| undefined;
 ```
 
-- [ ] **Step 4: Create `web/lib/auth/session.ts`**
+- [x] **Step 4: Create `web/lib/auth/session.ts`**
 
 ```ts
 import "server-only";
@@ -270,7 +270,7 @@ export async function deleteSession() {
 }
 ```
 
-- [ ] **Step 5: Create `web/lib/auth/auth.ts`**
+- [x] **Step 5: Create `web/lib/auth/auth.ts`**
 
 ```ts
 "use server";
@@ -415,7 +415,7 @@ export async function signOut() {
 }
 ```
 
-- [ ] **Step 6: Create `web/lib/gsap.ts`**
+- [x] **Step 6: Create `web/lib/gsap.ts`**
 
 ```ts
 "use client";
@@ -425,7 +425,7 @@ import gsap from "gsap";
 export { gsap };
 ```
 
-- [ ] **Step 7: Create `web/lib/UserPreference.ts`**
+- [x] **Step 7: Create `web/lib/UserPreference.ts`**
 
 ```ts
 "use client";
@@ -457,7 +457,7 @@ export function saveUserPreference(preference: UserPreference) {
 }
 ```
 
-- [ ] **Step 8: Run web build**
+- [x] **Step 8: Run web build**
 
 Run:
 
@@ -468,7 +468,7 @@ bun run build
 
 Expected: no missing `@/lib/*` module errors.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add web/lib web/types/auth.d.ts
@@ -486,7 +486,7 @@ git commit -m "fix(web): restore auth and utility modules"
 - Modify: `server/src/config/google.config.ts`
 - Modify: `server/tests/auth.test.ts`
 
-- [ ] **Step 1: Change Google callback fallback**
+- [x] **Step 1: Change Google callback fallback**
 
 In `server/src/config/google.config.ts`, replace:
 
@@ -500,7 +500,7 @@ with:
 'http://localhost:8000/api/auth/google/callback';
 ```
 
-- [ ] **Step 2: Add `GET /health` and keep `HEAD /health`**
+- [x] **Step 2: Add `GET /health` and keep `HEAD /health`**
 
 In `server/src/app.ts`, replace the current `app.head('/health', ...)` block with:
 
@@ -520,7 +520,7 @@ app.head('/health', (req, res) => {
 });
 ```
 
-- [ ] **Step 3: Update tests from `/auth/*` to `/api/auth/*`**
+- [x] **Step 3: Update tests from `/auth/*` to `/api/auth/*`**
 
 In `server/tests/auth.test.ts`, replace these paths:
 
@@ -540,7 +540,7 @@ with:
 .get('/api/auth/signout')
 ```
 
-- [ ] **Step 4: Run focused tests**
+- [x] **Step 4: Run focused tests**
 
 Run:
 
@@ -551,7 +551,7 @@ bun test -- --runInBand server/tests/auth.test.ts
 
 Expected: tests run against `/api/auth/*`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add server/src/app.ts server/src/config/google.config.ts server/tests/auth.test.ts
@@ -566,7 +566,7 @@ git commit -m "fix(server): align auth routes and health endpoint"
 - Modify: `server/src/middlewares/authenticate.middleware.ts`
 - Modify: `server/src/types/authRequest.d.ts`
 
-- [ ] **Step 1: Update `AuthRequest`**
+- [x] **Step 1: Update `AuthRequest`**
 
 Use:
 
@@ -582,7 +582,7 @@ export interface AuthRequest extends Request {
 export type ApiResponse = Response;
 ```
 
-- [ ] **Step 2: Add token extraction helper**
+- [x] **Step 2: Add token extraction helper**
 
 At the top of `server/src/middlewares/authenticate.middleware.ts`, after imports, add:
 
@@ -598,7 +598,7 @@ const getAccessTokenFromRequest = (req: AuthRequest) => {
 };
 ```
 
-- [ ] **Step 3: Use helper in `authMiddleware`**
+- [x] **Step 3: Use helper in `authMiddleware`**
 
 Replace:
 
@@ -622,7 +622,7 @@ if (!token) {
 }
 ```
 
-- [ ] **Step 4: Add auth middleware tests**
+- [x] **Step 4: Add auth middleware tests**
 
 In `server/tests/auth.test.ts`, add this case under signout tests:
 
@@ -646,7 +646,7 @@ it('accepts access token from cookie for protected routes', async () => {
 });
 ```
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 ```bash
 cd server
@@ -655,7 +655,7 @@ bun test -- --runInBand server/tests/auth.test.ts
 
 Expected: new cookie auth test passes.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add server/src/middlewares/authenticate.middleware.ts server/src/types/authRequest.d.ts server/tests/auth.test.ts
@@ -672,7 +672,7 @@ git commit -m "fix(server): accept cookie access token for auth middleware"
 - Modify: `server/src/controllers/auth.controller.ts`
 - Modify: `web/app/api/auth/google/callback/route.ts`
 
-- [ ] **Step 1: Replace OAuth redirect query construction**
+- [x] **Step 1: Replace OAuth redirect query construction**
 
 In `server/src/controllers/auth.controller.ts`, replace both redirect blocks that include `accessToken=${accessToken}&refreshToken=${refreshToken}` with:
 
@@ -688,7 +688,7 @@ return res.redirect(`${frontend}/api/auth/google/callback?${query}`);
 
 Keep `saveRefreshToken(...)` and `setCache(...)` before the redirect.
 
-- [ ] **Step 2: Replace frontend Google callback route**
+- [x] **Step 2: Replace frontend Google callback route**
 
 Replace `web/app/api/auth/google/callback/route.ts` with:
 
@@ -708,7 +708,7 @@ export async function GET(req: NextRequest) {
 }
 ```
 
-- [ ] **Step 3: Add a regression test for redirect safety**
+- [x] **Step 3: Add a regression test for redirect safety**
 
 In `server/tests/auth.test.ts`, add a helper-level or route-level test if Google callback is mocked. The assertion must check:
 
@@ -719,7 +719,7 @@ expect(response.headers.location).not.toContain('refreshToken=');
 
 If the current Passport test setup cannot call the callback safely, add this check after Google callback mocking is stabilized in Task 6.
 
-- [ ] **Step 4: Run builds**
+- [x] **Step 4: Run builds**
 
 ```bash
 cd server && bun run build
@@ -728,7 +728,7 @@ cd ../web && bun run build
 
 Expected: both builds pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add server/src/controllers/auth.controller.ts web/app/api/auth/google/callback/route.ts server/tests/auth.test.ts
@@ -745,7 +745,7 @@ git commit -m "fix(auth): stop leaking oauth tokens in redirect urls"
 - Modify: `server/prisma/schema.prisma`
 - Create: `server/prisma/migrations/<timestamp>_add_roles_and_reset_token_expiry/migration.sql`
 
-- [ ] **Step 1: Add `Role` enum to Prisma**
+- [x] **Step 1: Add `Role` enum to Prisma**
 
 In `server/prisma/schema.prisma`, after `Gender`, add:
 
@@ -756,7 +756,7 @@ enum Role {
 }
 ```
 
-- [ ] **Step 2: Add role and reset fields to `User`**
+- [x] **Step 2: Add role and reset fields to `User`**
 
 Inside `model User`, add:
 
@@ -773,7 +773,7 @@ Add indexes:
   @@index([passwordResetTokenHash])
 ```
 
-- [ ] **Step 3: Add refresh-token performance index**
+- [x] **Step 3: Add refresh-token performance index**
 
 Inside `model RefreshToken`, add:
 
@@ -781,7 +781,7 @@ Inside `model RefreshToken`, add:
   @@index([userId, sessionId, isActive, expiresAt])
 ```
 
-- [ ] **Step 4: Create migration**
+- [x] **Step 4: Create migration**
 
 Run:
 
@@ -792,7 +792,7 @@ bunx prisma migrate dev --name add_roles_and_reset_token_expiry
 
 Expected: migration SQL is generated under `server/prisma/migrations`.
 
-- [ ] **Step 5: Regenerate Prisma client**
+- [x] **Step 5: Regenerate Prisma client**
 
 ```bash
 cd server
@@ -801,7 +801,7 @@ bun run db:gen
 
 Expected: generated files include `Role`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add server/prisma server/src/generated
@@ -817,7 +817,7 @@ git commit -m "feat(server): add user roles and reset token expiry"
 - Modify: `server/src/types/user.d.ts`
 - Modify: `server/src/services/user.service.ts`
 
-- [ ] **Step 1: Replace `ReturnUserDto`**
+- [x] **Step 1: Replace `ReturnUserDto`**
 
 In `server/src/types/user.d.ts`, use:
 
@@ -864,7 +864,7 @@ export type UpdateUserProfileDto = {
 };
 ```
 
-- [ ] **Step 2: Create public user mapper**
+- [x] **Step 2: Create public user mapper**
 
 ```ts
 import { ReturnUserDto } from '#src/types/user.js';
@@ -903,7 +903,7 @@ export function toPublicUser(user: UserLike): ReturnUserDto {
 }
 ```
 
-- [ ] **Step 3: Use mapper in `user.service.ts`**
+- [x] **Step 3: Use mapper in `user.service.ts`**
 
 Import:
 
@@ -925,7 +925,7 @@ In `updateUserProfile`, replace manual return object with:
 return toPublicUser(user);
 ```
 
-- [ ] **Step 4: Run server build**
+- [x] **Step 4: Run server build**
 
 ```bash
 cd server
@@ -934,7 +934,7 @@ bun run build
 
 Expected: no duplicate type errors, no missing `role` errors.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add server/src/types/user.d.ts server/src/services/user.service.ts server/src/utils/auth/public-user.ts
@@ -951,7 +951,7 @@ git commit -m "feat(server): return role-aware public user dto"
 - Modify: `server/src/routes/user.route.ts`
 - Modify: `server/tests/auth.test.ts`
 
-- [ ] **Step 1: Create `authorize.middleware.ts`**
+- [x] **Step 1: Create `authorize.middleware.ts`**
 
 ```ts
 import { NextFunction, Response } from 'express';
@@ -975,7 +975,7 @@ export const requireRole =
   };
 ```
 
-- [ ] **Step 2: Load role in auth middleware**
+- [x] **Step 2: Load role in auth middleware**
 
 In `server/src/middlewares/authenticate.middleware.ts`, import:
 
@@ -1001,7 +1001,7 @@ Then set:
 (req as AuthRequest).role = user.role;
 ```
 
-- [ ] **Step 3: Add an admin-only route example**
+- [x] **Step 3: Add an admin-only route example**
 
 In `server/src/routes/user.route.ts`, import:
 
@@ -1017,7 +1017,7 @@ router.get('/admin/check', requireRole('ADMIN'), (req, res) => {
 });
 ```
 
-- [ ] **Step 4: Add RBAC tests**
+- [x] **Step 4: Add RBAC tests**
 
 In `server/tests/auth.test.ts`, mock `findUserById` separately and add:
 
@@ -1062,7 +1062,7 @@ it('allows admin user on admin route', async () => {
 });
 ```
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 ```bash
 cd server
@@ -1071,7 +1071,7 @@ bun test -- --runInBand server/tests/auth.test.ts
 
 Expected: RBAC tests pass.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add server/src/middlewares server/src/routes/user.route.ts server/tests/auth.test.ts
@@ -1088,7 +1088,7 @@ git commit -m "feat(server): add role based authorization middleware"
 - Modify: `server/src/controllers/auth.controller.ts`
 - Modify: `server/tests/auth.test.ts`
 
-- [ ] **Step 1: Block inactive users in signin**
+- [x] **Step 1: Block inactive users in signin**
 
 In `signin`, after `if (!user)`, add:
 
@@ -1101,7 +1101,7 @@ if (!user.isActive || user.deletedAt) {
 }
 ```
 
-- [ ] **Step 2: Decide email verification policy**
+- [x] **Step 2: Decide email verification policy**
 
 For hackathon templates, allow login before verification but expose `emailVerified` to the app. If the product requires verified-only access, use this block instead:
 
@@ -1116,7 +1116,7 @@ if (!user.emailVerified) {
 
 Choose one policy and document it in `server/README.MD`.
 
-- [ ] **Step 3: Add inactive-user test**
+- [x] **Step 3: Add inactive-user test**
 
 ```ts
 it('blocks inactive users from signing in', async () => {
@@ -1138,7 +1138,7 @@ it('blocks inactive users from signing in', async () => {
 });
 ```
 
-- [ ] **Step 4: Run tests and commit**
+- [x] **Step 4: Run tests and commit**
 
 ```bash
 cd server
@@ -1156,7 +1156,7 @@ git commit -m "fix(auth): enforce inactive account policy"
 - Modify: `server/src/services/user.service.ts`
 - Modify: `server/tests/auth.test.ts`
 
-- [ ] **Step 1: Hash reset tokens before storage**
+- [x] **Step 1: Hash reset tokens before storage**
 
 In `forgotPassword`, replace:
 
@@ -1177,7 +1177,7 @@ await updateUserProfile({
 
 Import `hashTokenCrypto` from `#src/utils/jwt/tokens.ts`.
 
-- [ ] **Step 2: Add service lookup**
+- [x] **Step 2: Add service lookup**
 
 In `server/src/services/user.service.ts`, add:
 
@@ -1194,7 +1194,7 @@ export async function findUserByPasswordResetTokenHash(tokenHash: string) {
 }
 ```
 
-- [ ] **Step 3: Update reset password**
+- [x] **Step 3: Update reset password**
 
 In `resetPassword`, replace:
 
@@ -1219,7 +1219,7 @@ await updateUserProfile({
 });
 ```
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 ```bash
 cd server
@@ -1228,7 +1228,7 @@ bun test -- --runInBand server/tests/auth.test.ts
 
 Expected: reset tests pass and expired tokens fail.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add server/src/controllers/user.controller.ts server/src/services/user.service.ts server/tests/auth.test.ts
@@ -1246,7 +1246,7 @@ git commit -m "fix(auth): use expiring one time password reset tokens"
 - Modify: `server/src/server.ts`
 - Modify: `server/src/utils/redis.ts`
 
-- [ ] **Step 1: Create Redis only when configured**
+- [x] **Step 1: Create Redis only when configured**
 
 In `server/src/app.ts`, replace Redis client creation with:
 
@@ -1262,7 +1262,7 @@ export const redisClient = redis.createClient({
 });
 ```
 
-- [ ] **Step 2: Guard cache reads**
+- [x] **Step 2: Guard cache reads**
 
 In `server/src/utils/redis.ts`, add:
 
@@ -1290,11 +1290,11 @@ For `getCache`, use:
 if (!isRedisReady()) return null;
 ```
 
-- [ ] **Step 3: Keep server booting when Redis is absent**
+- [x] **Step 3: Keep server booting when Redis is absent**
 
 In `server/src/server.ts`, keep the existing catch, but make sure no code exits the process on Redis connection failure.
 
-- [ ] **Step 4: Run server without Redis env**
+- [x] **Step 4: Run server without Redis env**
 
 Run:
 
@@ -1305,7 +1305,7 @@ env -u REDIS_HOST -u REDIS_PASSWORD bun run dev
 
 Expected: server starts and `/health` returns 200. Redis failure is logged but does not crash the API.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add server/src/app.ts server/src/server.ts server/src/utils/redis.ts
@@ -1321,7 +1321,7 @@ git commit -m "fix(server): make redis cache optional in local development"
 - Modify: `web/package.json`
 - Modify: `README.MD`
 
-- [ ] **Step 1: Add server scripts**
+- [x] **Step 1: Add server scripts**
 
 In `server/package.json`, add:
 
@@ -1337,7 +1337,7 @@ If `build` already runs `tsc`, keep `check:fast` as:
 "check:fast": "tsc --noEmit"
 ```
 
-- [ ] **Step 2: Add web scripts**
+- [x] **Step 2: Add web scripts**
 
 In `web/package.json`, add:
 
@@ -1347,7 +1347,7 @@ In `web/package.json`, add:
 "check:fast": "bun run typecheck"
 ```
 
-- [ ] **Step 3: Add top-level README quickstart**
+- [x] **Step 3: Add top-level README quickstart**
 
 In `README.MD`, replace the single `# Template` content with:
 
@@ -1400,7 +1400,7 @@ cd ../web && bun run check
 - `SESSION_SECRET`
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add server/package.json web/package.json README.MD
@@ -1416,7 +1416,7 @@ git commit -m "chore: add fast project verification scripts"
 - Modify: `server/src/middlewares/authenticate.middleware.ts`
 - Modify: `server/src/services/token.service.ts`
 
-- [ ] **Step 1: Cache session validity as boolean**
+- [x] **Step 1: Cache session validity as boolean**
 
 In Google callback, replace:
 
@@ -1440,7 +1440,7 @@ In signin, after `saveRefreshToken(...)`, add:
 await setCache(makeUserSessionCacheKey(user.id, sessionId), user.id, true);
 ```
 
-- [ ] **Step 2: Select only needed session fields**
+- [x] **Step 2: Select only needed session fields**
 
 In `server/src/services/token.service.ts`, ensure `isValidSession` keeps:
 
@@ -1450,7 +1450,7 @@ select: { userId: true, sessionId: true },
 
 Do not select full token rows on auth middleware hot path.
 
-- [ ] **Step 3: Run auth tests**
+- [x] **Step 3: Run auth tests**
 
 ```bash
 cd server
@@ -1459,7 +1459,7 @@ bun test -- --runInBand server/tests/auth.test.ts
 
 Expected: session validation behavior remains unchanged.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add server/src/controllers/auth.controller.ts server/src/middlewares/authenticate.middleware.ts server/src/services/token.service.ts
@@ -1476,7 +1476,7 @@ git commit -m "perf(auth): cache session validity on login"
 - Modify: `README.MD`
 - Modify: `fastapi/README.md`
 
-- [ ] **Step 1: Document primary backend**
+- [x] **Step 1: Document primary backend**
 
 Add this to top-level `README.MD`:
 
@@ -1486,7 +1486,7 @@ Add this to top-level `README.MD`:
 The active frontend integration uses `server/` (Express + Prisma). The `fastapi/` directory is an optional alternate implementation and should not be edited for the main template unless the project explicitly switches to FastAPI.
 ```
 
-- [ ] **Step 2: Mark FastAPI as optional**
+- [x] **Step 2: Mark FastAPI as optional**
 
 At the top of `fastapi/README.md`, add:
 
@@ -1496,7 +1496,7 @@ At the top of `fastapi/README.md`, add:
 This is an alternate backend implementation. The default template runtime uses `server/`.
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add README.MD fastapi/README.md
@@ -1507,7 +1507,7 @@ git commit -m "docs: clarify primary backend for template"
 
 ## Final Verification
 
-- [ ] **Step 1: Run server full check**
+- [x] **Step 1: Run server full check**
 
 ```bash
 cd server
@@ -1516,7 +1516,7 @@ bun run check
 
 Expected: TypeScript build and Jest tests pass.
 
-- [ ] **Step 2: Run web full check**
+- [x] **Step 2: Run web full check**
 
 ```bash
 cd web
@@ -1526,6 +1526,8 @@ bun run check
 Expected: typecheck, lint, and Next build pass.
 
 - [ ] **Step 3: Run local smoke**
+
+Status: partial smoke completed. API started without Redis and returned 200 for `/health` and `/api`. Web served `/` with HTTP 200 via `bunx next dev --webpack`; `bun run dev` hit the local OS file-watch limit under Turbopack. Manual signup/signin, real DB RBAC checks, and Google OAuth browser flow remain to be exercised.
 
 Terminal 1:
 
@@ -1583,4 +1585,3 @@ Expected:
 12. `chore: add fast project verification scripts`
 13. `perf(auth): cache session validity on login`
 14. `docs: clarify primary backend for template`
-
