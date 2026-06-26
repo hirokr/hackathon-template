@@ -523,6 +523,11 @@ describe('Auth routes', () => {
         'refresh-2',
         'access-2'
       );
+      expect(mockSetCache).toHaveBeenCalledWith(
+        'user-session:user-1:new-session',
+        'user-1',
+        true
+      );
     });
 
     it('revokes old session when rotating tokens', async () => {

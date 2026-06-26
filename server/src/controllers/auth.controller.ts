@@ -76,7 +76,7 @@ export const refresh = async (req: Request, res: Response) => {
     userId,
     newSessionId
   );
-  await setCache(newCacheKey, userId, newRefreshToken);
+  await setCache(newCacheKey, userId, true);
 
   const hashedRefreshToken = hashTokenCrypto(newRefreshToken);
   await saveRefreshToken(
