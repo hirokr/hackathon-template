@@ -12,6 +12,12 @@ import passport from 'passport';
 import authRoutes from './routes/auth.route.ts';
 import usersRoutes from './routes/user.route.ts';
 import { sendApiError, sendApiSuccess } from '#src/utils/api-response.ts';
+import {
+  getNumberEnv,
+  getOptionalEnv,
+  getSameSiteEnv,
+  isProduction,
+} from '#src/utils/env.ts';
 
 const app = express();
 app.use(helmet());
@@ -20,7 +26,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:5173',
-  process.env.FRONTEND_URL,
+  getOptionalEnv('FRONTEND_URL'),
 ].filter((origin): origin is string => Boolean(origin));
 
 app.use(
@@ -36,14 +42,13 @@ app.use(cookieParser());
 // Store sessions in PostgreSQL via Prisma
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || 'dev-session-secret',
+    secret: getOptionalEnv('SESSION_SECRET', 'dev-session-secret'),
     resave: false,
     saveUninitialized: true,
     // store: new PrismaSessionStore(),
     cookie: {
-      secure: process.env.NODE_ENV === 'production',
-      sameSite:
-        (process.env.COOKIE_SAME_SITE as 'lax' | 'strict' | 'none') || 'lax',
+      secure: isProduction(),
+      sameSite: getSameSiteEnv(),
       maxAge: 15 * 24 * 60 * 60 * 1000,
     },
   })
@@ -86,11 +91,11 @@ app.use('/api/user', usersRoutes);
 
 // Redis session store setup (commented out for now)
 export const redisClient = redis.createClient({
-  username: process.env.REDIS_USERNAME || 'default',
-  password: process.env.REDIS_PASSWORD,
+  username: getOptionalEnv('REDIS_USERNAME', 'default'),
+  password: getOptionalEnv('REDIS_PASSWORD'),
   socket: {
-    host: process.env.REDIS_HOST || 'localhost',
-    port: Number(process.env.REDIS_PORT || 6379),
+    host: getOptionalEnv('REDIS_HOST', 'localhost'),
+    port: getNumberEnv('REDIS_PORT', 6379),
     reconnectStrategy: false,
   },
 });

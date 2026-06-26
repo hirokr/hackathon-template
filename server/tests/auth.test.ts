@@ -4,7 +4,9 @@ import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 // 1. We cast mocks to <any> to prevent "Argument of type X is not assignable to parameter of type never" errors.
 const mockFindUserByEmail = jest.fn<any>();
 const mockFindUserById = jest.fn<any>();
+const mockFindUserByPasswordResetTokenHash = jest.fn<any>();
 const mockCreateUser = jest.fn<any>();
+const mockUpdateUserProfile = jest.fn<any>();
 const mockUpdateUserPassword = jest.fn<any>();
 const mockVerifyHash = jest.fn<any>();
 const mockHashing = jest.fn<any>();
@@ -28,6 +30,7 @@ const mockGetSetCache = jest.fn<any>();
 const mockSetCache = jest.fn<any>();
 const mockInvalidateCache = jest.fn<any>();
 const mockSendVerificationEmail = jest.fn<any>();
+const mockSendPasswordResetEmail = jest.fn<any>();
 let mockGoogleUser: any = null;
 
 // 2. Mock Modules
@@ -39,8 +42,8 @@ jest.unstable_mockModule('#src/services/user.service.ts', () => ({
   updateUserPassword: mockUpdateUserPassword,
   findUserById: mockFindUserById,
   findUserByVerificationToken: jest.fn(),
-  findUserByPasswordResetTokenHash: jest.fn(),
-  updateUserProfile: jest.fn(),
+  findUserByPasswordResetTokenHash: mockFindUserByPasswordResetTokenHash,
+  updateUserProfile: mockUpdateUserProfile,
   verifyUserEmail: jest.fn(),
 }));
 
@@ -80,7 +83,7 @@ jest.unstable_mockModule('#src/utils/redis.ts', () => ({
 jest.unstable_mockModule('#src/utils/mail/sendMail.ts', () => ({
   sendVerificationEmail: mockSendVerificationEmail,
   sendWelcomeEmail: jest.fn(),
-  sendPasswordResetEmail: jest.fn(),
+  sendPasswordResetEmail: mockSendPasswordResetEmail,
 }));
 
 jest.unstable_mockModule('passport', () => ({
@@ -133,6 +136,7 @@ describe('Auth routes', () => {
       isActive: true,
     });
     mockSendVerificationEmail.mockResolvedValue(undefined);
+    mockSendPasswordResetEmail.mockResolvedValue(undefined);
     mockGoogleUser = null;
   });
 
@@ -702,6 +706,86 @@ describe('Auth routes', () => {
       );
       expect(response.headers.location).not.toContain('accessToken=');
       expect(response.headers.location).not.toContain('refreshToken=');
+    });
+  });
+
+  describe('POST /api/user/forgot-password', () => {
+    it('stores a hashed expiring reset token and emails the raw token', async () => {
+      mockFindUserByEmail.mockResolvedValue({
+        id: 'user-1',
+        email: 'test@example.com',
+        name: 'John Doe',
+      });
+      mockCreateRandomToken.mockReturnValue('reset-token');
+      mockHashTokenCrypto.mockReturnValue('hashed-reset-token');
+      mockUpdateUserProfile.mockResolvedValue(undefined);
+      mockSendPasswordResetEmail.mockResolvedValue(undefined);
+
+      const response = await request(app)
+        .post('/api/user/forgot-password')
+        .send({ email: 'test@example.com' });
+
+      expect(response.status).toBe(200);
+      expect(mockHashTokenCrypto).toHaveBeenCalledWith('reset-token');
+      expect(mockUpdateUserProfile).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'user-1',
+          passwordResetTokenHash: 'hashed-reset-token',
+          passwordResetExpiresAt: expect.any(Date),
+        })
+      );
+      expect(mockSendPasswordResetEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          resetLink: expect.stringContaining('token=reset-token'),
+        })
+      );
+    });
+  });
+
+  describe('POST /api/user/reset-password', () => {
+    it('rejects expired or unknown reset tokens', async () => {
+      mockHashTokenCrypto.mockReturnValue('hashed-reset-token');
+      mockFindUserByPasswordResetTokenHash.mockResolvedValue(null);
+
+      const response = await request(app).post('/api/user/reset-password').send({
+        token: 'reset-token',
+        newPassword: 'Password1!',
+        confirmPassword: 'Password1!',
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message', 'Invalid or expired token');
+      expect(mockFindUserByPasswordResetTokenHash).toHaveBeenCalledWith(
+        'hashed-reset-token'
+      );
+      expect(mockUpdateUserPassword).not.toHaveBeenCalled();
+    });
+
+    it('clears the one-time reset token after a successful password reset', async () => {
+      mockHashTokenCrypto.mockReturnValue('hashed-reset-token');
+      mockFindUserByPasswordResetTokenHash.mockResolvedValue({
+        id: 'user-1',
+      });
+      mockHashing.mockResolvedValue('new-password-hash');
+      mockUpdateUserPassword.mockResolvedValue(undefined);
+      mockUpdateUserProfile.mockResolvedValue(undefined);
+
+      const response = await request(app).post('/api/user/reset-password').send({
+        token: 'reset-token',
+        newPassword: 'Password1!',
+        confirmPassword: 'Password1!',
+      });
+
+      expect(response.status).toBe(200);
+      expect(mockUpdateUserPassword).toHaveBeenCalledWith(
+        'user-1',
+        'new-password-hash'
+      );
+      expect(mockUpdateUserProfile).toHaveBeenCalledWith({
+        userId: 'user-1',
+        passwordResetTokenHash: null,
+        passwordResetExpiresAt: null,
+      });
     });
   });
 });

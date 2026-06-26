@@ -1,20 +1,15 @@
 import { SignJWT, jwtVerify } from 'jose';
 import crypto from 'crypto';
+import { getOptionalEnv, getRequiredEnv, getSameSiteEnv, isProduction } from '#src/utils/env.ts';
 
 // Separate secrets for each token type
-if (!process.env.JWT_SECRET || !process.env.REFRESH_JWT_SECRET) {
-  throw new Error('JWT secrets are not defined in environment variables');
-}
-
-const ACCESS_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET as string
-);
+const ACCESS_SECRET = new TextEncoder().encode(getRequiredEnv('JWT_SECRET'));
 const REFRESH_SECRET = new TextEncoder().encode(
-  process.env.REFRESH_JWT_SECRET as string
+  getRequiredEnv('REFRESH_JWT_SECRET')
 );
 
-const ACCESS_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '5m';
-const REFRESH_EXPIRES_IN = process.env.REFRESH_JWT_EXPIRES_IN || '15d';
+const ACCESS_EXPIRES_IN = getOptionalEnv('JWT_EXPIRES_IN', '5m');
+const REFRESH_EXPIRES_IN = getOptionalEnv('REFRESH_JWT_EXPIRES_IN', '15d');
 
 export const generateTokens = async (userId: string, sessionId: string) => {
   const [accessToken, refreshToken] = await Promise.all([
@@ -103,13 +98,13 @@ export const saveToCookie = async (
     // use lowercase `expires` and also provide `maxAge` for robustness
     expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 days
     maxAge: 15 * 24 * 60 * 60 * 1000,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.COOKIE_SAME_SITE || 'strict',
+    secure: isProduction(),
+    sameSite: getSameSiteEnv('COOKIE_SAME_SITE', 'strict'),
   });
   res.cookie('accessToken', accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.COOKIE_SAME_SITE || 'strict',
+    secure: isProduction(),
+    sameSite: getSameSiteEnv('COOKIE_SAME_SITE', 'strict'),
     // short-lived access token cookie — set a reasonable expiry (matches JWT short expiry)
     expires: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
     maxAge: 5 * 60 * 1000,
